@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+
+<style>
+.shadowbox {
+  width: 15em;
+  border: 1px solid #333;
+  box-shadow: 8px 8px 5px #444;
+  padding: 8px 12px;
+  margin-top: 20px;
+  background-image: linear-gradient(180deg, #fff -10%, #fff 80%, #fff);
+}
+</style>
+
+
+<html>
+	<head>
+	  <title>Publish Subscribe Tutorial</title>
+	</head>
+	<input type="text" placeholder="Enter your Name" id="name-field" style="width: 250px; margin-top: 130px; margin-left: 500px; overflow-y: scroll; position:fixed;">
+<input type="text" placeholder="your message..." id="input-field" style="width: 250px; margin-top: 30px; margin-left: 500px; overflow-y: scroll; position:fixed;">
+	<body style="background-color:gray;">
+	
+		<list id="msg_list">
+		
+		</list>
+		
+		
+		
+	</body>
+
+<script src="https://cdn.pubnub.com/sdk/javascript/pubnub.4.21.7.min.js"></script>
+<script>
+	var nickname;
+	document.querySelector('#input-field').addEventListener('keyup', function (event) {
+					if(event.key === "Enter"){
+						/*let list = document.querySelector('#msg_list');
+						var p = document.createElement('p');  
+						var textnode = document.createTextNode(nickname.wholeText + ": " + document.querySelector('#input-field').value);
+						p.appendChild(textnode);
+						var div = document.createElement('div');
+						div.className = "shadowbox";
+						div.appendChild(p);
+						list.appendChild(div);
+						
+						document.querySelector('#input-field').value = "";*/
+						
+						pubnub.publish({
+							channel : "char_room_1",
+							message : {"sender": uuid, "content": document.querySelector('#input-field').value, "from": nickname.wholeText}
+							}, function(status, response) {
+								//console.log(status);
+							});
+							document.querySelector('#input-field').value = "";
+						//alert(document.querySelector('#input-field').value);
+					}
+				});
+				
+				
+	document.querySelector('#name-field').addEventListener('keyup', function (event) {
+		if(event.key === "Enter"){
+			nickname = document.createTextNode(document.querySelector('#name-field').value);
+			//alert(document.querySelector('#input-field').value);
+		}
+	});
+
+
+	var uuid = localStorage.getItem("user_uuid");
+	if(uuid === null){
+		uuid = PubNub.generateUUID();
+		localStorage.setItem("user_uuid", uuid);
+	}
+	
+	//const uuid = PubNub.generateUUID();
+	
+	
+  
+	const pubnub = new PubNub({
+		publishKey: "pub-c-bd1fe6b3-2aa5-40ca-8b93-40405ef37424",
+		subscribeKey: "sub-c-658cd692-2ede-11eb-a9aa-e23bcc63a965",
+		uuid: uuid
+	});
+	
+	pubnub.subscribe({
+		channels: ['char_room_1'],
+		withPresence: true
+	});
+	
+	pubnub.addListener({
+		message: function(event) {
+		console.log(event.message.from);
+		  
+		let list = document.querySelector('#msg_list');
+		var p = document.createElement('p');
+		var textnode = document.createTextNode(event.message.from + ": " + event.message.content);
+		p.appendChild(textnode);
+		var div = document.createElement('div');
+		div.className = "shadowbox";
+		div.appendChild(p);
+		list.appendChild(div);
+		  
+		  
+		},
+		presence: function(event) {
+		  let pElement = document.createElement('p');
+		  pElement.appendChild(document.createTextNode(event.uuid + " has joined. That's you!"));
+		  document.body.appendChild(pElement);
+		}
+	});
+	
+
+
+	
+	/*button.addEventListener('click', () => {
+		pubnub.publish({
+		channel : "pubnub_onboarding_channel",
+		message : {"sender": uuid, "content": "Hello From JavaScript SDK"}
+		}, function(status, response) {
+		//Handle error here
+		});
+	});
+
+
+
+  
+
+  pubnub.history(
+    {
+      channel: 'pubnub_onboarding_channel',
+      count: 10,
+      stringifiedTimeToken: true,
+    },
+    function (status, response) {
+      let pElement = document.createElement('h3');
+      pElement.appendChild(document.createTextNode('historical messages'));
+      document.body.appendChild(pElement);
+
+      pElement = document.createElement('ul');
+      let msgs = response.messages;
+      for (let i in msgs) {
+        msg = msgs[i];
+        let pElement = document.createElement('li');
+        pElement.appendChild(document.createTextNode('sender: ' + msg.entry.sender + ', content: ' + msg.entry.content));
+        document.body.appendChild(pElement);
+      }
+    }
+  );*/
+
+</script>
+</html>
